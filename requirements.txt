@@ -1,9 +1,9 @@
 flask
 flask-cors
-opencv-python
-numpy
-mediapipe
-tensorflow
+opencv-python-headless
+numpy==1.23.5
+mediapipe==0.10.11
+tensorflow==2.13.0
 deep-translator
 gtts
-mysql-connector-python
+gunicorn
