@@ -1,6 +1,6 @@
 flask
 flask-cors
-opencv-python-headless
+opencv-python
 numpy==1.23.5
 mediapipe==0.10.11
 tensorflow-cpu==2.10.1
