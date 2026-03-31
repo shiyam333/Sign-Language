@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .auth-bg{
+      position:fixed;inset:0;
+      background-image:
+        linear-gradient(rgba(45,212,191,0.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(45,212,191,0.025) 1px,transparent 1px);
+      background-size:50px 50px;pointer-events:none;z-index:0;
+    }
+    .auth-card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:38px;
+      width:100%;max-width:430px;
+      position:relative;z-index:2;
+      animation:fadeUp 0.45s var(--ease) both;
+    }
+    .auth-logo{text-align:center;margin-bottom:26px}
+    .auth-icon{
+      width:54px;height:54px;
+      background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+      border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;margin:0 auto 12px;
+    }
+    .auth-logo h2{margin-bottom:4px;font-size:1.45rem}
+    .auth-logo p{font-size:0.83rem;color:var(--text-3)}
+    .auth-form{display:flex;flex-direction:column;gap:14px}
+    .inp-wrap{position:relative}
+    .inp-ico{
+      position:absolute;left:13px;top:50%;transform:translateY(-50%);
+      font-size:0.9rem;pointer-events:none;color:var(--text-3);
+    }
+    .inp-wrap .form-input{padding-left:38px}
+    .auth-feats{
+      display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0;
+    }
+    .auth-feat{
+      display:flex;align-items:center;gap:5px;
+      font-size:0.76rem;color:var(--text-3);
+    }
+    .auth-feat em{color:var(--teal);font-style:normal}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+  <div class="auth-bg"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-icon">🤟</div>
+      <h2>Welcome back</h2>
+      <p>Sign in to continue your learning journey</p>
+    </div>
+
+    <div class="form-error" id="errBox"></div>
+
+    <div class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Email or Username</label>
+        <div class="inp-wrap">
+          <span class="inp-ico">👤</span>
+          <input type="text" class="form-input" id="identifier" placeholder="you@example.com" autocomplete="username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="inp-wrap">
+          <span class="inp-ico">🔒</span>
+          <input type="password" class="form-input" id="password" placeholder="Your password" autocomplete="current-password">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" id="loginBtn" style="margin-top:4px">Sign In</button>
+    </div>
+
+    <div class="divider" style="margin:20px 0"><span>New to SignBridge?</span></div>
+    <a href="/register" class="btn btn-outline btn-full">Create Free Account</a>
+
+    <div class="auth-feats">
+      <div class="auth-feat"><em>✓</em> Free forever</div>
+      <div class="auth-feat"><em>✓</em> Track progress</div>
+      <div class="auth-feat"><em>✓</em> Earn badges</div>
+      <div class="auth-feat"><em>✓</em> 5 lesson paths</div>
+    </div>
+
+    <div style="text-align:center;margin-top:18px">
+      <a href="/" style="font-size:0.82rem;color:var(--text-3)">← Back to home</a>
+    </div>
+  </div>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    document.getElementById('password').addEventListener('keydown', function(e){
+      if(e.key === 'Enter') doLogin();
+    });
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+
+    async function doLogin(){
+      var identifier = document.getElementById('identifier').value.trim();
+      var password   = document.getElementById('password').value;
+      var errBox     = document.getElementById('errBox');
+      var btn        = document.getElementById('loginBtn');
+
+      errBox.classList.remove('show');
+      if(!identifier || !password){
+        errBox.textContent = 'Please fill in all fields.';
+        errBox.classList.add('show'); return;
+      }
+      btn.textContent = 'Signing in…';
+      btn.disabled = true;
+
+      try{
+        var resp = await fetch('/api/login',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({identifier:identifier, password:password})
+        });
+        var data = await resp.json();
+        if(data.success){
+          showToast('Welcome back! 🎉','success');
+          setTimeout(function(){ window.location.href = data.redirect || '/learn'; }, 600);
+        } else {
+          errBox.textContent = data.error || 'Invalid credentials.';
+          errBox.classList.add('show');
+          btn.textContent = 'Sign In';
+          btn.disabled = false;
+        }
+      } catch(e){
+        errBox.textContent = 'Connection error. Please try again.';
+        errBox.classList.add('show');
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

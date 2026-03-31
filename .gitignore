@@ -1,0 +1,11 @@
+# Virtual environment (your folder is env/)
+env/
+.venv/
+venv/
+
+# Build folders
+build/
+dist/
+
+# Dataset / large files
+data/

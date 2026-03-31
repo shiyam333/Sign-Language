@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .about-hero{text-align:center;padding:50px 0;max-width:640px;margin:0 auto}
+    .about-hero h1{margin-bottom:14px}
+    .about-hero p{font-size:1.04rem;line-height:1.8}
+
+    .mission-box{
+      background:linear-gradient(135deg,rgba(45,212,191,0.07),rgba(139,92,246,0.07));
+      border:1px solid rgba(45,212,191,0.14);
+      border-radius:var(--r-xl);
+      padding:44px;text-align:center;margin:40px 0;
+    }
+    .mission-box h2{margin-bottom:14px}
+    .mission-box p{max-width:560px;margin:0 auto;font-size:0.97rem;line-height:1.82}
+
+    .about-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+      gap:18px;margin:40px 0;
+    }
+    .acard{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:26px;
+    }
+    .acard-ico{font-size:1.9rem;margin-bottom:14px;display:block}
+    .acard h3{font-size:1.05rem;margin-bottom:12px}
+    .acard ul{list-style:none;display:flex;flex-direction:column;gap:0}
+    .acard li{
+      display:flex;align-items:center;gap:9px;
+      padding:9px 0;border-bottom:1px solid var(--border);
+      font-size:0.85rem;color:var(--text-2);
+    }
+    .acard li:last-child{border-bottom:none}
+    .acard li strong{color:var(--teal);font-weight:700}
+
+    .tech-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+      gap:11px;margin-top:22px;
+    }
+    .tech-chip{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-md);padding:13px;text-align:center;
+      transition:border-color var(--dur) var(--ease);
+    }
+    .tech-chip:hover{border-color:var(--border-hover)}
+    .tech-ico{font-size:1.5rem;display:block;margin-bottom:6px}
+    .tech-name{font-size:0.76rem;font-weight:600;color:var(--text-2)}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-box">🤟</div>
+        Sign<em>Wavely</em>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/translator">Translator</a></li>
+        <li><a href="/dictionary">Dictionary</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about" class="active">About</a></li>
+      </ul>
+      <div class="nav-end">
+        {% if user %}
+          <div class="nav-user-pill">
+            
+            <span class="nav-uname">{{ user.username }}</span>
+          </div>
+          <a href="/logout" class="btn btn-ghost btn-sm">Sign Out</a>
+        {% else %}
+          <a href="/login" class="btn btn-ghost btn-sm">Sign In</a>
+          <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="about-hero fade-up">
+        <div class="label" style="justify-content:center">About</div>
+        <h1>Building Bridges Through Sign Language</h1>
+        <p>An AI-powered accessibility tool helping deaf and hard-of-hearing communities communicate with everyone.</p>
+      </div>
+
+      <div class="mission-box fade-up-1">
+        <h2>Our Mission</h2>
+        <p>
+          To eliminate communication barriers by combining computer vision, deep learning,
+          and natural language processing — making sign language accessible, learnable, and
+          recognised everywhere, for everyone.
+        </p>
+      </div>
+
+      <div class="about-grid fade-up-1">
+        <div class="acard">
+          <span class="acard-ico">⚡</span>
+          <h3>Performance Metrics</h3>
+          <ul>
+            <li>🎯 Model Accuracy: <strong>94%</strong></li>
+            <li>📹 Processing Speed: <strong>30+ FPS</strong></li>
+            <li>✋ Signs Supported: <strong>20+</strong></li>
+            <li>🌐 Languages: <strong>10+ Indian</strong></li>
+            <li>🤲 Hand Modes: <strong>Single &amp; Dual</strong></li>
+          </ul>
+        </div>
+        <div class="acard">
+          <span class="acard-ico">📚</span>
+          <h3>Learning Platform</h3>
+          <ul>
+            <li>🎓 5 structured lesson paths</li>
+            <li>📊 Per-sign accuracy tracking</li>
+            <li>🏅 Achievement badge system</li>
+            <li>🏆 Global leaderboard</li>
+            <li>📖 30+ sign dictionary entries</li>
+          </ul>
+        </div>
+        <div class="acard">
+          <span class="acard-ico">🔊</span>
+          <h3>Communication Tools</h3>
+          <ul>
+            <li>🌐 Real-time translation output</li>
+            <li>🔊 Google TTS voice synthesis</li>
+            <li>📋 Copy text to clipboard</li>
+            <li>💾 Download conversation log</li>
+            <li>🤝 10+ language support</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="fade-up-2">
+        <div class="label">Built With</div>
+        <h2>Technology Stack</h2>
+        <div class="tech-grid">
+          <div class="tech-chip"><span class="tech-ico">🧠</span><div class="tech-name">TensorFlow</div></div>
+          <div class="tech-chip"><span class="tech-ico">👁️</span><div class="tech-name">MediaPipe</div></div>
+          <div class="tech-chip"><span class="tech-ico">📸</span><div class="tech-name">OpenCV</div></div>
+          <div class="tech-chip"><span class="tech-ico">🐍</span><div class="tech-name">Flask</div></div>
+          <div class="tech-chip"><span class="tech-ico">🗄️</span><div class="tech-name">MySQL</div></div>
+          <div class="tech-chip"><span class="tech-ico">🌐</span><div class="tech-name">Google Translate</div></div>
+          <div class="tech-chip"><span class="tech-ico">🔊</span><div class="tech-name">Google TTS</div></div>
+          <div class="tech-chip"><span class="tech-ico">📹</span><div class="tech-name">WebRTC</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 <em>SignBridge</em> &mdash; Empowering Accessibility with AI</p>
+  </footer>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

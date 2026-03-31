@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .auth-bg{
+      position:fixed;inset:0;
+      background-image:
+        linear-gradient(rgba(45,212,191,0.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(45,212,191,0.025) 1px,transparent 1px);
+      background-size:50px 50px;pointer-events:none;z-index:0;
+    }
+    .auth-card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:38px;width:100%;max-width:445px;
+      position:relative;z-index:2;
+      animation:fadeUp 0.45s var(--ease) both;
+    }
+    .auth-logo{text-align:center;margin-bottom:24px}
+    .auth-icon{
+      width:54px;height:54px;
+      background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+      border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;margin:0 auto 12px;
+    }
+    .auth-logo h2{margin-bottom:4px;font-size:1.45rem}
+    .auth-logo p{font-size:0.83rem;color:var(--text-3)}
+    .auth-form{display:flex;flex-direction:column;gap:13px}
+    .inp-wrap{position:relative}
+    .inp-ico{
+      position:absolute;left:13px;top:50%;transform:translateY(-50%);
+      font-size:0.9rem;pointer-events:none;color:var(--text-3);
+    }
+    .inp-wrap .form-input{padding-left:38px}
+    /* password strength */
+    .str-bars{display:flex;gap:4px;margin-top:6px}
+    .str-bar{
+      flex:1;height:3px;border-radius:2px;
+      background:rgba(255,255,255,0.08);
+      transition:background 0.25s var(--ease);
+    }
+    .str-lbl{font-size:0.73rem;color:var(--text-3);margin-top:4px;display:block}
+    .terms{font-size:0.76rem;color:var(--text-3);line-height:1.6}
+    .terms a{color:var(--teal)}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+  <div class="auth-bg"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-icon">🤟</div>
+      <h2>Create your account</h2>
+      <p>Start learning sign language for free today</p>
+    </div>
+
+    <div class="form-error" id="errBox"></div>
+
+    <div class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="inp-wrap">
+          <span class="inp-ico">👤</span>
+          <input type="text" class="form-input" id="username" placeholder="yourname" autocomplete="username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="inp-wrap">
+          <span class="inp-ico">✉️</span>
+          <input type="email" class="form-input" id="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="inp-wrap">
+          <span class="inp-ico">🔒</span>
+          <input type="password" class="form-input" id="password" placeholder="Min. 6 characters"
+                 autocomplete="new-password" oninput="checkStr(this.value)">
+        </div>
+        <div class="str-bars">
+          <div class="str-bar" id="b1"></div>
+          <div class="str-bar" id="b2"></div>
+          <div class="str-bar" id="b3"></div>
+          <div class="str-bar" id="b4"></div>
+        </div>
+        <span class="str-lbl" id="strLbl">Enter a password</span>
+      </div>
+      <p class="terms">
+        By registering you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </p>
+      <button class="btn btn-primary btn-full" id="regBtn" style="margin-top:4px">Create Free Account</button>
+    </div>
+
+    <div class="divider" style="margin:18px 0"><span>Already have an account?</span></div>
+    <a href="/login" class="btn btn-outline btn-full">Sign In</a>
+
+    <div style="text-align:center;margin-top:16px">
+      <a href="/" style="font-size:0.82rem;color:var(--text-3)">← Back to home</a>
+    </div>
+  </div>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    var COLORS = ['#ef4444','#f59e0b','#2dd4bf','#22c55e'];
+    var LABELS = ['Too short','Weak','Good','Strong'];
+
+    function checkStr(p){
+      var bars = [document.getElementById('b1'),document.getElementById('b2'),
+                  document.getElementById('b3'),document.getElementById('b4')];
+      var lbl  = document.getElementById('strLbl');
+      bars.forEach(function(b){ b.style.background='rgba(255,255,255,0.08)'; });
+      if(!p){ lbl.textContent='Enter a password'; lbl.style.color=''; return; }
+      var s=0;
+      if(p.length>=6)s++;
+      if(p.length>=10)s++;
+      if(/[A-Z]/.test(p)&&/[0-9]/.test(p))s++;
+      if(/[^A-Za-z0-9]/.test(p))s++;
+      for(var i=0;i<s;i++) bars[i].style.background=COLORS[s-1];
+      lbl.textContent = LABELS[s-1]||'Too short';
+      lbl.style.color = COLORS[s-1]||'var(--text-3)';
+    }
+
+    document.getElementById('password').addEventListener('keydown',function(e){
+      if(e.key==='Enter') doReg();
+    });
+    document.getElementById('regBtn').addEventListener('click', doReg);
+
+    async function doReg(){
+      var username = document.getElementById('username').value.trim();
+      var email    = document.getElementById('email').value.trim();
+      var password = document.getElementById('password').value;
+      var errBox   = document.getElementById('errBox');
+      var btn      = document.getElementById('regBtn');
+
+      errBox.classList.remove('show');
+      if(!username||!email||!password){
+        errBox.textContent='All fields are required.';
+        errBox.classList.add('show'); return;
+      }
+      if(password.length<6){
+        errBox.textContent='Password must be at least 6 characters.';
+        errBox.classList.add('show'); return;
+      }
+      btn.textContent='Creating account…';
+      btn.disabled=true;
+
+      try{
+        var resp = await fetch('/api/register',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({username:username,email:email,password:password})
+        });
+        var data = await resp.json();
+        if(data.success){
+          showToast('Account created! Welcome 🎉','success');
+          setTimeout(function(){ window.location.href=data.redirect||'/learn'; },700);
+        } else {
+          errBox.textContent=data.error||'Registration failed.';
+          errBox.classList.add('show');
+          btn.textContent='Create Free Account';
+          btn.disabled=false;
+        }
+      } catch(e){
+        errBox.textContent='Connection error. Please try again.';
+        errBox.classList.add('show');
+        btn.textContent='Create Free Account';
+        btn.disabled=false;
+      }
+    }
+  </script>
+</body>
+</html>

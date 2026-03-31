@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Wavely— AI Sign Language Translator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* ── Hero ── */
+    .hero{
+      min-height:100vh;
+      display:flex;align-items:center;justify-content:center;
+      text-align:center;
+      position:relative;overflow:hidden;
+      padding-top:var(--nav-h);
+    }
+    .hero-orb{
+      position:absolute;border-radius:50%;
+      filter:blur(90px);pointer-events:none;
+    }
+    .orb-1{
+      width:700px;height:700px;
+      background:radial-gradient(circle,rgba(45,212,191,0.07) 0%,transparent 70%);
+      top:-160px;left:50%;transform:translateX(-50%);
+      animation:floatAnim 9s ease-in-out infinite;
+    }
+    .orb-2{
+      width:420px;height:420px;
+      background:radial-gradient(circle,rgba(139,92,246,0.05) 0%,transparent 70%);
+      bottom:60px;right:-100px;
+    }
+    .hero-inner{
+      position:relative;z-index:2;
+      max-width:780px;margin:0 auto;padding:60px 24px;
+    }
+    .hero-pill{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:5px 15px;
+      background:var(--teal-subtle);
+      border:1px solid rgba(45,212,191,0.18);
+      border-radius:var(--r-full);
+      font-size:0.77rem;font-weight:700;
+      color:var(--teal);letter-spacing:0.05em;
+      margin-bottom:26px;
+    }
+    .pill-dot{
+      width:6px;height:6px;border-radius:50%;
+      background:var(--teal);animation:pulse 2s ease infinite;
+    }
+    .hero h1{
+      font-size:clamp(2.6rem,6.5vw,5rem);
+      font-weight:700;letter-spacing:-0.04em;
+      line-height:1.06;margin-bottom:22px;
+    }
+    .grad-text{
+      background:linear-gradient(135deg,var(--teal) 0%,#5eead4 50%,var(--teal) 100%);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:shimmer 4s linear infinite;
+    }
+    .hero-sub{
+      font-size:1.08rem;color:var(--text-2);
+      max-width:540px;margin:0 auto 36px;line-height:1.75;
+    }
+    .hero-actions{
+      display:flex;align-items:center;justify-content:center;
+      gap:12px;flex-wrap:wrap;
+    }
+    .hero-stats{
+      display:flex;align-items:center;justify-content:center;
+      gap:44px;flex-wrap:wrap;
+      margin-top:56px;padding-top:36px;
+      border-top:1px solid var(--border);
+    }
+    .hstat-num{
+      font-family:var(--ff-display);font-size:2.2rem;
+      font-weight:700;letter-spacing:-0.04em;color:var(--text-1);
+    }
+    .hstat-num em{color:var(--teal);font-style:normal}
+    .hstat-lbl{font-size:0.76rem;color:var(--text-3);margin-top:2px}
+
+    /* ── Sections ── */
+    .sec{padding:88px 0;position:relative;z-index:1}
+    .sec-alt{
+      background:var(--bg-surface);
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+    }
+
+    /* ── Feature grid ── */
+    .feat-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:16px;margin-top:44px;
+    }
+    .feat-card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      padding:26px;
+      transition:all var(--dur-slow) var(--ease);
+      position:relative;overflow:hidden;
+    }
+    .feat-card::after{
+      content:'';position:absolute;
+      top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,transparent,var(--feat-color,var(--teal)),transparent);
+      opacity:0;transition:opacity var(--dur) var(--ease);
+    }
+    .feat-card:hover{border-color:var(--border-hover);transform:translateY(-3px)}
+    .feat-card:hover::after{opacity:1}
+    .feat-icon{
+      width:48px;height:48px;border-radius:var(--r-md);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.35rem;margin-bottom:18px;
+      background:var(--feat-bg,var(--teal-subtle));
+    }
+    .feat-card h3{font-size:1rem;margin-bottom:8px}
+    .feat-card p{font-size:0.84rem;line-height:1.7}
+
+    /* ── Steps ── */
+    .steps-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:28px;margin-top:48px;
+      position:relative;
+    }
+    .step{text-align:center}
+    .step-num{
+      width:52px;height:52px;border-radius:50%;
+      background:var(--bg-card);border:2px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--ff-display);font-size:1.1rem;font-weight:700;
+      color:var(--teal);margin:0 auto 18px;
+      transition:all var(--dur) var(--ease);
+    }
+    .step:hover .step-num{background:var(--teal-subtle);border-color:var(--teal);box-shadow:var(--sh-teal)}
+    .step h4{margin-bottom:6px}
+    .step p{font-size:0.82rem;color:var(--text-3)}
+
+    /* ── CTA ── */
+    .cta-box{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:60px 44px;text-align:center;
+      position:relative;overflow:hidden;
+    }
+    .cta-box::before{
+      content:'';position:absolute;
+      top:-1px;left:50%;transform:translateX(-50%);
+      width:260px;height:1px;
+      background:linear-gradient(90deg,transparent,var(--teal),transparent);
+    }
+    .cta-box h2{margin-bottom:14px}
+    .cta-box p{font-size:1rem;max-width:440px;margin:0 auto 32px}
+    .cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+    /* Rotating hand */
+    .hand-card{
+      position:absolute;right:4%;top:50%;transform:translateY(-50%);
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-xl);padding:18px 24px;
+      text-align:center;animation:floatAnim 5s ease-in-out infinite;
+      display:none;
+    }
+    @media(min-width:1180px){.hand-card{display:block}}
+    .hand-emoji{font-size:3.8rem;display:block;margin-bottom:8px}
+    .hand-label{font-size:0.82rem;font-weight:700;color:var(--teal)}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+  <div class="amb amb-2"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-box">🤟</div>
+        Sign<em>Wavely</em>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/" class="active">Home</a></li>
+        <li><a href="/translator">Translator</a></li>
+        <li><a href="/dictionary">Dictionary</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+      <div class="nav-end">
+        {% if user %}
+          <div class="nav-user-pill">
+            
+            <span class="nav-uname">{{ user.username }}</span>
+          </div>
+          <a href="/logout" class="btn btn-ghost btn-sm">Sign Out</a>
+        {% else %}
+          <a href="/login" class="btn btn-ghost btn-sm">Sign In</a>
+          <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-orb orb-1"></div>
+    <div class="hero-orb orb-2"></div>
+
+    <div class="hand-card">
+      <span class="hand-emoji" id="heroEmoji">👋</span>
+      <div class="hand-label" id="heroLabel">HELLO</div>
+    </div>
+
+    <div class="hero-inner fade-up">
+      <div class="hero-pill">
+        <div class="pill-dot"></div>
+        AI-Powered Sign Language Recognition
+      </div>
+      <h1>
+        Bridge Every<br>
+        <span class="grad-text">Conversation</span><br>
+        in Sign Language
+      </h1>
+      <p class="hero-sub">
+        Real-time hand gesture recognition using MediaPipe and TensorFlow.
+        Learn, practice, and communicate in 10+ Indian languages instantly.
+      </p>
+      <div class="hero-actions">
+        <a href="/translator" class="btn btn-primary btn-xl">📹 Start Translating</a>
+        {% if user %}
+          <a href="/learn" class="btn btn-outline btn-xl">🎓 My Lessons</a>
+        {% else %}
+          <a href="/register" class="btn btn-outline btn-xl">🎓 Learn Free</a>
+        {% endif %}
+      </div>
+      <div class="hero-stats fade-up-2">
+        <div>
+          <div class="hstat-num">94<em>%</em></div>
+          <div class="hstat-lbl">Accuracy</div>
+        </div>
+        <div>
+          <div class="hstat-num">30<em>+</em></div>
+          <div class="hstat-lbl">FPS Speed</div>
+        </div>
+        <div>
+          <div class="hstat-num">20<em>+</em></div>
+          <div class="hstat-lbl">Sign Gestures</div>
+        </div>
+        <div>
+          <div class="hstat-num">10<em>+</em></div>
+          <div class="hstat-lbl">Languages</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="label">Why SignBridge</div>
+      <h2>Everything you need to connect</h2>
+      <div class="feat-grid fade-up-1">
+        <div class="feat-card" style="--feat-color:var(--teal);--feat-bg:var(--teal-subtle)">
+          <div class="feat-icon">📹</div>
+          <h3>Real-Time Detection</h3>
+          <p>30+ FPS with MediaPipe dual-hand support and live landmark drawing.</p>
+        </div>
+        <div class="feat-card" style="--feat-color:var(--amber);--feat-bg:var(--amber-glow)">
+          <div class="feat-icon">🌐</div>
+          <h3>10+ Languages</h3>
+          <p>Translate to Tamil, Hindi, Telugu, Malayalam, Kannada and more.</p>
+        </div>
+        <div class="feat-card" style="--feat-color:var(--purple);--feat-bg:var(--purple-glow)">
+          <div class="feat-icon">🎓</div>
+          <h3>Structured Lessons</h3>
+          <p>5 progressive lesson paths with XP, accuracy tracking, and badges.</p>
+        </div>
+        <div class="feat-card" style="--feat-color:var(--pink);--feat-bg:var(--pink-glow)">
+          <div class="feat-icon">🔊</div>
+          <h3>Voice Output</h3>
+          <p>Google TTS reads recognised signs aloud in your chosen language.</p>
+        </div>
+        <div class="feat-card" style="--feat-color:var(--teal);--feat-bg:var(--teal-subtle)">
+          <div class="feat-icon">📖</div>
+          <h3>Sign Dictionary</h3>
+          <p>Browse 30+ signs across 5 categories with tips and difficulty levels.</p>
+        </div>
+        <div class="feat-card" style="--feat-color:var(--orange);--feat-bg:var(--orange-glow)">
+          <div class="feat-icon">📊</div>
+          <h3>Progress Analytics</h3>
+          <p>Per-sign accuracy, lesson completion, streaks, and a global leaderboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="sec sec-alt">
+    <div class="wrap">
+      <div class="label">Simple Process</div>
+      <h2>Start in seconds</h2>
+      <div class="steps-grid fade-up-1">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h4>Open Translator</h4>
+          <p>Click Start and allow camera access</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h4>Make a Sign</h4>
+          <p>Show your hand gesture to the camera</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h4>AI Recognises</h4>
+          <p>TensorFlow model identifies the gesture</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h4>Hear &amp; Read</h4>
+          <p>Word displayed and spoken in your language</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="sec">
+    <div class="wrap-md">
+      <div class="cta-box fade-up">
+        <div class="label" style="justify-content:center">Get Started</div>
+        <h2>Ready to break barriers?</h2>
+        <p>Join learners using AI to communicate through sign language. No experience needed.</p>
+        <div class="cta-btns">
+          <a href="/translator" class="btn btn-outline btn-xl">📹 Try Translator</a>
+          {% if user %}
+            <a href="/learn" class="btn btn-primary btn-xl">📚 Continue Learning</a>
+          {% else %}
+            <a href="/register" class="btn btn-primary btn-xl">🎓 Create Free Account</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 <em>SignBridge</em> &mdash; Empowering Accessibility with AI</p>
+  </footer>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    var hands = [
+      {e:'👋',l:'HELLO'},{e:'🙏',l:'THANK YOU'},{e:'✌️',l:'PEACE'},
+      {e:'🤟',l:'I LOVE YOU'},{e:'👍',l:'GOOD'},{e:'✅',l:'YES'}
+    ];
+    var hi = 0;
+    setInterval(function(){
+      hi = (hi + 1) % hands.length;
+      var e = document.getElementById('heroEmoji');
+      var l = document.getElementById('heroLabel');
+      if(e) e.textContent = hands[hi].e;
+      if(l) l.textContent = hands[hi].l;
+    }, 2200);
+  </script>
+</body>
+</html>

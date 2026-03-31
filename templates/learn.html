@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* User hero */
+    .user-hero{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-xl);padding:28px;
+      display:grid;grid-template-columns:auto 1fr auto;
+      gap:22px;align-items:center;margin-bottom:28px;
+    }
+    @media(max-width:680px){.user-hero{grid-template-columns:1fr}}
+    .u-avatar{
+      width:68px;height:68px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--ff-display);font-size:1.7rem;
+      font-weight:700;color:#04111a;flex-shrink:0;
+    }
+    .u-info h2{font-size:1.35rem;margin-bottom:3px}
+    .u-info p{font-size:0.82rem;color:var(--text-3)}
+    .u-info .tag-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+    .u-stats{display:flex;gap:26px;flex-shrink:0}
+    @media(max-width:680px){.u-stats{justify-content:space-around}}
+
+    /* Lessons grid */
+    .lessons-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(275px,1fr));
+      gap:18px;margin-top:22px;
+    }
+    .lesson-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-xl);overflow:hidden;
+      text-decoration:none;display:block;
+      transition:all var(--dur-slow) var(--ease);
+    }
+    .lesson-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 14px 42px rgba(0,0,0,0.45);
+      border-color:var(--border-hover);
+    }
+    .lesson-card.locked{opacity:0.48;pointer-events:none;cursor:default}
+
+    .lcard-top{
+      padding:22px;position:relative;overflow:hidden;
+    }
+    .lcard-lvl{
+      display:inline-flex;align-items:center;gap:4px;
+      font-size:0.7rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.08em;padding:3px 9px;
+      border-radius:var(--r-full);
+      background:rgba(255,255,255,0.12);
+      color:rgba(255,255,255,0.8);margin-bottom:13px;
+    }
+    .lcard-icon{font-size:2.3rem;display:block;margin-bottom:9px}
+    .lcard-title{
+      font-family:var(--ff-display);font-size:1.15rem;
+      font-weight:700;color:#fff;margin-bottom:3px;
+    }
+    .lcard-sub{font-size:0.8rem;color:rgba(255,255,255,0.65)}
+    .lcard-lock{
+      position:absolute;top:14px;right:14px;
+      font-size:1.2rem;opacity:0.6;
+    }
+
+    .lcard-bot{
+      padding:16px 22px;border-top:1px solid var(--border);
+    }
+    .lcard-meta{
+      display:flex;justify-content:space-between;
+      align-items:center;margin-bottom:11px;
+    }
+    .lcard-signs{font-size:0.78rem;color:var(--text-3)}
+    .lcard-xp{font-size:0.78rem;font-weight:700;color:var(--amber)}
+    .lcard-pct{
+      display:flex;justify-content:space-between;
+      font-size:0.72rem;color:var(--text-3);margin-bottom:5px;
+    }
+    .lcard-cta{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-top:13px;
+    }
+    .status-badge{
+      display:inline-flex;align-items:center;gap:5px;
+      font-size:0.73rem;font-weight:700;padding:3px 9px;
+      border-radius:var(--r-full);
+    }
+    .sb-done{background:rgba(45,212,191,0.12);color:var(--teal);border:1px solid rgba(45,212,191,0.25)}
+    .sb-prog{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
+    .sb-new{background:rgba(255,255,255,0.05);color:var(--text-3);border:1px solid var(--border)}
+    .sb-lock{background:rgba(255,255,255,0.04);color:var(--text-3);border:1px solid var(--border)}
+
+    /* Leaderboard */
+    .lb-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-lg);overflow:hidden;
+    }
+    .lb-head{
+      padding:14px 18px;border-bottom:1px solid var(--border);
+      font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:8px;
+    }
+    .lb-row{
+      display:flex;align-items:center;gap:13px;
+      padding:11px 18px;border-bottom:1px solid var(--border);
+      transition:background var(--dur) var(--ease);
+    }
+    .lb-row:last-child{border-bottom:none}
+    .lb-row:hover{background:rgba(255,255,255,0.02)}
+    .lb-rank{
+      font-family:var(--ff-display);font-size:0.95rem;
+      font-weight:700;width:26px;color:var(--text-3);flex-shrink:0;
+    }
+    .lb-rank.gold{color:var(--amber)}
+    .lb-av{
+      width:34px;height:34px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:0.82rem;color:#04111a;flex-shrink:0;
+    }
+    .lb-name{flex:1;font-weight:600;font-size:0.88rem}
+    .lb-num{
+      font-family:var(--ff-display);font-weight:700;
+      font-size:0.95rem;color:var(--text-1);
+    }
+    .lb-sub{font-size:0.7rem;color:var(--text-3)}
+
+    /* Badges */
+    .badge-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+    .badge-item{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:12px 16px;
+      display:flex;align-items:center;gap:11px;
+      transition:border-color var(--dur) var(--ease);
+    }
+    .badge-item:hover{border-color:var(--border-hover)}
+    .badge-ico{font-size:1.7rem}
+    .badge-name{font-size:0.84rem;font-weight:600;margin-bottom:2px}
+    .badge-date{font-size:0.71rem;color:var(--text-3)}
+    .badge-empty{
+      font-size:0.87rem;color:var(--text-3);
+      text-align:center;padding:28px;
+      background:var(--bg-card);
+      border:1px dashed var(--border);
+      border-radius:var(--r-lg);width:100%;
+    }
+
+    .bottom-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:22px;
+    }
+    @media(max-width:700px){.bottom-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+  <div class="amb amb-2"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-box">🤟</div>
+        Sign<em>Wavely</em>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/translator">Translator</a></li>
+        <li><a href="/dictionary">Dictionary</a></li>
+        <li><a href="/learn" class="active">Learn</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+      <div class="nav-end">
+        <div class="nav-user-pill">
+         
+          <span class="nav-uname">{{ user.username }}</span>
+        </div>
+        <a href="/logout" class="btn btn-ghost btn-sm">Sign Out</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <!-- User Hero -->
+      <div class="user-hero fade-up">
+       
+        <div class="u-info">
+          <h2>{{ user.username }}'s Learning Hub</h2>
+          <p>Member since {{ user.created_at.strftime('%B %Y') if user.created_at else 'recently' }}</p>
+          <div class="tag-row">
+            {% if stats.badges %}
+              {% for badge in stats.badges[:3] %}
+                <span class="chip chip-teal">{{ badge.badge_icon }} {{ badge.badge_name }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="chip chip-amber">🌱 Just getting started</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="u-stats">
+          <div style="text-align:center">
+            <div class="stat-val">{{ stats.total_signs or 0 }}</div>
+            <div class="stat-lbl">Signs Learned</div>
+          </div>
+          <div style="text-align:center">
+            <div class="stat-val">{{ "%.0f"|format(stats.avg_accuracy or 0) }}%</div>
+            <div class="stat-lbl">Avg Accuracy</div>
+          </div>
+          <div style="text-align:center">
+            <div class="stat-val">{{ stats.completed_lessons or 0 }}</div>
+            <div class="stat-lbl">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lessons -->
+      <div style="margin-bottom:40px" class="fade-up-1">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div>
+            <div class="label">Learning Path</div>
+            <h2>Your Lessons</h2>
+          </div>
+          <a href="/dictionary" class="btn btn-outline btn-sm">📖 Dictionary</a>
+        </div>
+
+        <div class="lessons-grid">
+          {% for lesson in lessons %}
+            {# Build completed set #}
+            {% set completed_ids = [] %}
+            {% for l in lessons %}
+              {% set lp = progress.get(l.id, []) %}
+              {% set signs_done = lp | selectattr('accuracy', 'ge', 70) | list | length %}
+              {% if signs_done >= l.signs | length %}
+                {% set _ = completed_ids.append(l.id) %}
+              {% endif %}
+            {% endfor %}
+
+            {% set is_locked = lesson.prerequisite is not none and lesson.prerequisite not in completed_ids %}
+            {% set lp = progress.get(lesson.id, []) %}
+            {% set done_count = lp | selectattr('accuracy', 'ge', 70) | list | length %}
+            {% set total = lesson.signs | length %}
+            {% set pct = ((done_count / total) * 100) | int if total > 0 else 0 %}
+
+            {% if pct >= 100 %}
+              {% set status = 'done' %}
+            {% elif pct > 0 %}
+              {% set status = 'prog' %}
+            {% elif is_locked %}
+              {% set status = 'lock' %}
+            {% else %}
+              {% set status = 'new' %}
+            {% endif %}
+
+            <a href="{{ '/lesson/' + lesson.id if not is_locked else '#' }}"
+               class="lesson-card {{ 'locked' if is_locked }}">
+              
+                {% if is_locked %}<div class="lcard-lock">🔒</div>{% endif %}
+                <div class="lcard-lvl">Level {{ lesson.level }}</div>
+                <span class="lcard-icon">{{ lesson.icon }}</span>
+                <div class="lcard-title">{{ lesson.title }}</div>
+                <div class="lcard-sub">{{ lesson.subtitle }}</div>
+              </div>
+              <div class="lcard-bot">
+                <div class="lcard-meta">
+                  <span class="lcard-signs">{{ total }} signs</span>
+                  <span class="lcard-xp">⚡ {{ lesson.xp_reward }} XP</span>
+                </div>
+                <div class="lcard-pct">
+                  <span>Progress</span><span>{{ pct }}%</span>
+                </div>
+                <div class="prog-track">
+                  
+                </div>
+                <div class="lcard-cta">
+                  <span class="status-badge sb-{{ status }}">
+                    {% if status == 'done' %}✅ Complete
+                    {% elif status == 'prog' %}📖 In Progress
+                    {% elif status == 'lock' %}🔒 Locked
+                    {% else %}▶ Start{% endif %}
+                  </span>
+                  {% if not is_locked %}
+                    <span style="font-size:0.8rem;color:var(--text-3)">→</span>
+                  {% endif %}
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Bottom grid -->
+      <div class="bottom-grid fade-up-2">
+
+        <!-- Badges -->
+        <div>
+          <div class="label">Earned</div>
+          <h3 style="margin-bottom:4px">Achievements</h3>
+          <div class="badge-grid">
+            {% if stats.badges %}
+              {% for badge in stats.badges %}
+                <div class="badge-item">
+                  <div class="badge-ico">{{ badge.badge_icon }}</div>
+                  <div>
+                    <div class="badge-name">{{ badge.badge_name }}</div>
+                    <div class="badge-date">
+                      {{ badge.earned_at.strftime('%b %d, %Y') if badge.earned_at else '' }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="badge-empty">🏆 Complete a lesson to earn your first badge!</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div>
+          <div class="label">Community</div>
+          <h3 style="margin-bottom:4px">Top Learners</h3>
+          <div class="lb-card" style="margin-top:14px">
+            <div class="lb-head">🏆 Global Leaderboard</div>
+            <div id="lbBody">
+              <div style="padding:18px;text-align:center;color:var(--text-3);font-size:0.85rem">
+                Loading…
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 <em>SignBridge</em> &mdash; Empowering Accessibility with AI</p>
+  </footer>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    fetch('/api/leaderboard')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var el = document.getElementById('lbBody');
+        if(!data.leaderboard || !data.leaderboard.length){
+          el.innerHTML='<div style="padding:18px;text-align:center;color:var(--text-3);font-size:0.85rem">No learners yet &mdash; be the first!</div>';
+          return;
+        }
+        el.innerHTML = data.leaderboard.map(function(u,i){
+          var rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+          var cls  = i<3 ? 'lb-rank gold' : 'lb-rank';
+          var init = u.username.charAt(0).toUpperCase();
+          var clr  = u.avatar_color || '#2dd4bf';
+          return '<div class="lb-row">'
+            +'<div class="'+cls+'">'+rank+'</div>'
+            +'<div class="lb-av" style="background:'+clr+'">'+init+'</div>'
+            +'<div class="lb-name">'+u.username+'</div>'
+            +'<div style="text-align:right"><div class="lb-num">'+u.signs_learned+'</div>'
+            +'<div class="lb-sub">signs learned</div></div>'
+            +'</div>';
+        }).join('');
+      })
+      .catch(function(){
+        document.getElementById('lbBody').innerHTML =
+          '<div style="padding:18px;text-align:center;color:var(--text-3)">Could not load leaderboard.</div>';
+      });
+  </script>
+</body>
+</html>

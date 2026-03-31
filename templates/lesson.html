@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ lesson.title }} — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .lesson-layout{
+      display:grid;grid-template-columns:1fr 370px;
+      gap:22px;align-items:start;
+    }
+    @media(max-width:960px){.lesson-layout{grid-template-columns:1fr}}
+
+    /* Header banner - color set inline via JS/style attribute */
+    .lesson-banner{
+      border-radius:var(--r-xl);padding:22px 26px;
+      margin-bottom:22px;
+      display:flex;align-items:center;gap:18px;
+      border:1px solid var(--border);
+    }
+    .lesson-banner-icon{font-size:2.8rem;flex-shrink:0}
+    .lesson-banner h1{font-size:1.75rem;margin-bottom:3px}
+    .lesson-banner p{font-size:0.84rem;color:rgba(255,255,255,0.65)}
+    .lesson-banner-back{margin-left:auto;flex-shrink:0}
+
+    /* Stats row */
+    .stats-row{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      gap:12px;margin-bottom:18px;
+    }
+    .sbox{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:14px;text-align:center;
+    }
+    .sbox .stat-val{font-size:1.55rem}
+
+    /* Sign tabs */
+    .sign-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+    .sign-tab{
+      padding:7px 14px;border-radius:var(--r-sm);
+      border:1px solid var(--border);background:var(--bg-card);
+      color:var(--text-2);font-size:0.8rem;font-weight:600;
+      cursor:pointer;transition:all var(--dur) var(--ease);
+      display:flex;align-items:center;gap:6px;
+    }
+    .sign-tab:hover{border-color:var(--border-hover);color:var(--text-1)}
+    .sign-tab.active{background:var(--teal-subtle);border-color:var(--teal);color:var(--text-1)}
+    .sign-tab .tdot{
+      width:7px;height:7px;border-radius:50%;
+      background:var(--text-3);flex-shrink:0;
+    }
+    .sign-tab.done .tdot{background:var(--green)}
+
+    /* Practice card */
+    .practice-card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-xl);overflow:hidden;
+    }
+    .prac-head{
+      padding:14px 18px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:0.76rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.08em;color:var(--text-2);
+    }
+    .prac-body{
+      padding:28px 24px;text-align:center;
+    }
+    .prac-emoji{
+      font-size:4.8rem;display:block;
+      margin-bottom:12px;
+      animation:floatAnim 3.5s ease-in-out infinite;
+    }
+    .prac-name{
+      font-family:var(--ff-display);font-size:2rem;
+      font-weight:700;margin-bottom:8px;
+    }
+    .prac-desc{font-size:0.88rem;color:var(--text-2);max-width:300px;margin:0 auto}
+    .prac-tip{
+      display:inline-block;margin-top:14px;
+      padding:9px 14px;
+      background:var(--teal-subtle);
+      border:1px solid rgba(45,212,191,0.18);
+      border-radius:var(--r-sm);
+      font-size:0.8rem;color:var(--teal);
+    }
+    .prac-actions{
+      display:flex;gap:9px;padding:0 22px 22px;
+    }
+
+    /* Camera mini */
+    .cam-mini{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-xl);overflow:hidden;margin-top:18px;
+    }
+    .cam-mini-head{
+      padding:12px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:0.84rem;font-weight:600;
+    }
+    .cam-mini-status{display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--text-3)}
+    .cam-mini-feed{
+      position:relative;aspect-ratio:4/3;background:#000;overflow:hidden;
+    }
+    #lessonVid{width:100%;height:100%;object-fit:cover}
+    #lessonCanvas{display:none}
+    .detect-strip{
+      position:absolute;bottom:10px;left:10px;right:10px;
+      background:rgba(7,13,21,0.9);backdrop-filter:blur(8px);
+      border:1px solid var(--border);border-radius:var(--r-md);
+      padding:9px 13px;display:none;
+    }
+    .detect-word{
+      font-family:var(--ff-display);font-size:1.2rem;
+      font-weight:700;color:var(--teal);
+    }
+    .detect-fb{font-size:0.75rem;margin-top:3px}
+    .detect-fb.ok{color:var(--green)}
+    .detect-fb.no{color:var(--text-3)}
+    .cam-mini-foot{
+      padding:12px 16px;border-top:1px solid var(--border);
+      display:flex;gap:8px;
+    }
+
+    /* Sidebar */
+    .sidebar{display:flex;flex-direction:column;gap:14px}
+    .scard{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--r-lg);overflow:hidden;
+    }
+    .scard-head{
+      padding:12px 16px;border-bottom:1px solid var(--border);
+      font-size:0.75rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.08em;color:var(--text-2);
+    }
+    .scard-body{padding:14px}
+
+    .sp-list{display:flex;flex-direction:column;gap:6px}
+    .sp-row{
+      display:flex;align-items:center;gap:10px;
+      padding:7px 9px;border-radius:var(--r-xs);
+      cursor:pointer;transition:background var(--dur) var(--ease);
+    }
+    .sp-row:hover{background:rgba(255,255,255,0.03)}
+    .sp-row.active{background:var(--teal-subtle)}
+    .sp-emo{font-size:1.15rem;flex-shrink:0}
+    .sp-info{flex:1}
+    .sp-name{font-size:0.84rem;font-weight:600}
+    .sp-acc{font-size:0.7rem;color:var(--text-3)}
+    .sp-status{
+      width:19px;height:19px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.68rem;flex-shrink:0;
+    }
+    .sps-ok{background:rgba(34,197,94,0.15);color:var(--green)}
+    .sps-part{background:var(--amber-glow);color:var(--amber)}
+    .sps-none{background:rgba(255,255,255,0.05);color:var(--text-3)}
+
+    /* Result flash overlay */
+    .result-flash{
+      position:fixed;top:50%;left:50%;
+      transform:translate(-50%,-50%) scale(0.88);
+      background:var(--bg-elevated);
+      border-radius:var(--r-xl);
+      padding:30px 46px;text-align:center;z-index:700;
+      display:none;box-shadow:0 0 60px rgba(0,0,0,0.5);
+    }
+    .result-flash.show{
+      display:block;
+      animation:popIn 0.28s var(--ease) both;
+    }
+    .result-flash.rf-ok{border:2px solid var(--green);box-shadow:0 0 50px rgba(34,197,94,0.2)}
+    .result-flash.rf-no{border:2px solid rgba(239,68,68,0.5)}
+    .rf-emo{font-size:3.2rem;display:block;margin-bottom:7px}
+    .rf-txt{font-family:var(--ff-display);font-size:1.35rem;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-box">🤟</div>
+        Sign<em>Bridge</em>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/translator">Translator</a></li>
+        <li><a href="/dictionary">Dictionary</a></li>
+        <li><a href="/learn" class="active">Learn</a></li>
+      </ul>
+      <div class="nav-end">
+        <div class="nav-user-pill">
+          <span class="nav-uname">{{ user.username }}</span>
+        </div>
+        <a href="/logout" class="btn btn-ghost btn-sm">Sign Out</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <!-- Banner (color set inline) -->
+      <div class="lesson-banner fade-up"
+           style="background:linear-gradient(135deg8)">
+        <span class="lesson-banner-icon">{{ lesson.icon }}</span>
+        <div>
+          <h1>{{ lesson.title }}</h1>
+          <p>{{ lesson.subtitle }} &bull; {{ lesson.signs | length }} signs &bull; ⚡ {{ lesson.xp_reward }} XP</p>
+        </div>
+        <div class="lesson-banner-back">
+          <a href="/learn" class="btn btn-ghost btn-sm">← Lessons</a>
+        </div>
+      </div>
+
+      <!-- Session stats -->
+      <div class="stats-row fade-up-1">
+        <div class="sbox">
+          <div class="stat-val" id="sessAttempts">0</div>
+          <div class="stat-lbl">Attempts</div>
+        </div>
+        <div class="sbox">
+          <div class="stat-val" id="sessCorrect">0</div>
+          <div class="stat-lbl">Correct</div>
+        </div>
+        <div class="sbox">
+          <div class="stat-val" id="sessAcc">0%</div>
+          <div class="stat-lbl">Accuracy</div>
+        </div>
+      </div>
+
+      <!-- Sign tabs -->
+      <div class="sign-tabs fade-up-1" id="signTabs">
+        {% for sign_name in lesson.signs %}
+          {% set sp = progress.get(sign_name, {}) %}
+          {% set acc = sp.get('accuracy', 0) if sp else 0 %}
+          <button class="sign-tab {{ 'done' if acc >= 70 }}"
+                  id="tab-{{ loop.index }}"
+                  onclick="selectSign('{{ sign_name }}')">
+            <div class="tdot"></div>
+            {{ sign_name }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <div class="lesson-layout fade-up-2">
+
+        <!-- Left: practice + camera -->
+        <div>
+          <!-- Practice card -->
+          <div class="practice-card">
+            <div class="prac-head">
+              <span>Now Practising</span>
+              <span id="pracConf" style="color:var(--text-3)"></span>
+            </div>
+            <div class="prac-body">
+              <span class="prac-emoji" id="pracEmoji">✋</span>
+              <div class="prac-name" id="pracName">Select a sign</div>
+              <div class="prac-desc" id="pracDesc">Choose a sign from the tabs above to begin.</div>
+              <div class="prac-tip" id="pracTip" style="display:none"></div>
+            </div>
+            <div class="prac-actions">
+              <button class="btn btn-ghost" style="flex:1" onclick="prevSign()">← Prev</button>
+              <button class="btn btn-primary" style="flex:2" id="markBtn" disabled onclick="markCorrect()">
+                ✅ Mark Correct
+              </button>
+              <button class="btn btn-ghost" style="flex:1" onclick="nextSign()">Next →</button>
+            </div>
+          </div>
+
+          <!-- Camera -->
+          <div class="cam-mini">
+            <div class="cam-mini-head">
+              📹 Live Practice
+              <div class="cam-mini-status">
+                <div class="dot" id="camDot"></div>
+                <span id="camTxt">Idle</span>
+              </div>
+            </div>
+            <div class="cam-mini-feed">
+              <video id="lessonVid" autoplay playsinline muted
+                     style="width:100%;height:100%;object-fit:cover"></video>
+              <canvas id="lessonCanvas"></canvas>
+              <div class="detect-strip" id="detectStrip">
+                <div class="detect-word" id="detectWord">—</div>
+                <div class="detect-fb" id="detectFb"></div>
+              </div>
+            </div>
+            <div class="cam-mini-foot">
+              <button id="camOnBtn"  class="btn btn-primary" style="flex:1" onclick="startCam()">▶ Start Camera</button>
+              <button id="camOffBtn" class="btn btn-danger"  style="flex:1" disabled onclick="stopCam()">⏹ Stop</button>
+              <button id="autoBtn"   class="btn btn-ghost btn-sm" style="flex:1;font-size:0.76rem" onclick="toggleAuto()">🤖 Auto ON</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+          <!-- Progress card -->
+          <div class="scard">
+            <div class="scard-head">📋 Lesson Progress</div>
+            <div class="scard-body">
+              <div style="display:flex;justify-content:space-between;font-size:0.73rem;color:var(--text-3);margin-bottom:5px">
+                <span>Overall</span>
+                <span id="overallPct">0%</span>
+              </div>
+              <div class="prog-track" style="height:7px;margin-bottom:16px">
+                <div class="prog-fill" id="overallBar" style="width:0%"></div>
+              </div>
+              <div class="sp-list">
+                {% for sign_name in lesson.signs %}
+                  {% set sp = progress.get(sign_name, {}) %}
+                  {% set acc = sp.get('accuracy', 0) if sp else 0 %}
+                  {% set attempts = sp.get('attempts', 0) if sp else 0 %}
+
+                  {# Find emoji from dictionary #}
+                  {% set sign_emoji = '✋' %}
+                  {% for cat, signs in sign_dictionary.items() %}
+                    {% for s in signs %}
+                      {% if s.word == sign_name %}{% set sign_emoji = s.emoji %}{% endif %}
+                    {% endfor %}
+                  {% endfor %}
+
+                  <div class="sp-row {{ 'active' if loop.first }}"
+                       id="spr-{{ loop.index }}"
+             
+                    <span class="sp-emo">{{ sign_emoji }}</span>
+                    <div class="sp-info">
+                      <div class="sp-name">{{ sign_name }}</div>
+                      <div class="sp-acc">
+                        {{ attempts }} attempt{{ 's' if attempts != 1 }}
+                        {% if acc > 0 %} &bull; {{ "%.0f"|format(acc) }}%{% endif %}
+                      </div>
+                    </div>
+                    <div class="sp-status {{ 'sps-ok' if acc >= 70 else 'sps-part' if acc > 0 else 'sps-none' }}">
+                      {{ '✓' if acc >= 70 else '~' if acc > 0 else '·' }}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips card -->
+          <div class="scard">
+            <div class="scard-head">💡 How to Practise</div>
+            <div class="scard-body" style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span>1️⃣</span>
+                <p style="font-size:0.82rem;margin:0">Select a sign from the tabs above.</p>
+              </div>
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span>2️⃣</span>
+                <p style="font-size:0.82rem;margin:0">Start the camera and make the gesture.</p>
+              </div>
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span>3️⃣</span>
+                <p style="font-size:0.82rem;margin:0">AI auto-detects correct signs, or tap Mark Correct.</p>
+              </div>
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span>4️⃣</span>
+                <p style="font-size:0.82rem;margin:0">Reach 70%+ accuracy to complete each sign.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result flash -->
+  <div class="result-flash" id="resultFlash">
+    <span class="rf-emo" id="rfEmo">✅</span>
+    <div class="rf-txt" id="rfTxt">Correct!</div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 <em>SignBridge</em> &mdash; Empowering Accessibility with AI</p>
+  </footer>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    /* ── Data from server ── */
+
+
+    /* ── State ── */
+    var currentIdx   = 0;
+    var sessAttempts = 0;
+    var sessCorrect  = 0;
+    var camStream    = null;
+    var camRunning   = false;
+    var autoMode     = true;
+    var frameTimer   = null;
+    var procFrame    = false;
+    var autoTimeout  = null;
+
+    /* ── Sign data lookup ── */
+    function getSignData(word) {
+      for (var cat in SIGN_DICT) {
+        var list = SIGN_DICT[cat];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].word === word) return list[i];
+        }
+      }
+      return { emoji:'✋', description:'Practise the '+word+' sign.', tip:'Watch carefully and mirror the gesture.' };
+    }
+
+    /* ── Select sign ── */
+    function selectSign(name, tabIdx) {
+      currentIdx = LESSON_SIGNS.indexOf(name);
+      var sd = getSignData(name);
+      document.getElementById('pracEmoji').textContent = sd.emoji;
+      document.getElementById('pracName').textContent  = name;
+      document.getElementById('pracDesc').textContent  = sd.description;
+      var tipEl = document.getElementById('pracTip');
+      tipEl.textContent = '💡 ' + sd.tip;
+      tipEl.style.display = 'block';
+      document.getElementById('markBtn').disabled = false;
+
+      /* Update tabs */
+      document.querySelectorAll('.sign-tab').forEach(function(b){ b.classList.remove('active'); });
+      var tab = document.getElementById('tab-'+tabIdx);
+      if (tab) tab.classList.add('active');
+
+      /* Update sidebar rows */
+      document.querySelectorAll('.sp-row').forEach(function(r){ r.classList.remove('active'); });
+      var spr = document.getElementById('spr-'+tabIdx);
+      if (spr) spr.classList.add('active');
+    }
+
+    function nextSign() {
+      if (currentIdx < LESSON_SIGNS.length-1) selectSign(LESSON_SIGNS[currentIdx+1], currentIdx+2);
+    }
+    function prevSign() {
+      if (currentIdx > 0) selectSign(LESSON_SIGNS[currentIdx-1], currentIdx);
+    }
+
+    /* ── Mark correct (manual) ── */
+    async function markCorrect() {
+      await recordAttempt(true);
+      showFlash(true);
+    }
+
+    async function recordAttempt(correct) {
+      sessAttempts++;
+      if (correct) sessCorrect++;
+      updateStats();
+      var sign = LESSON_SIGNS[currentIdx];
+      try {
+        var resp = await fetch('/api/lesson/progress', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ lesson_id: LESSON_ID, sign_word: sign, correct: correct })
+        });
+        if (resp.ok) {
+          var d = await resp.json();
+          if (d.lesson_complete) showToast('🎉 Lesson complete! Badge earned!','success');
+          /* Update tab dot */
+          var idx = LESSON_SIGNS.indexOf(sign);
+          var tab = document.getElementById('tab-'+(idx+1));
+          if (tab && correct) tab.classList.add('done');
+        }
+      } catch(_) {}
+      updateOverall();
+    }
+
+    function updateStats() {
+      document.getElementById('sessAttempts').textContent = sessAttempts;
+      document.getElementById('sessCorrect').textContent  = sessCorrect;
+      var acc = sessAttempts > 0 ? Math.round(sessCorrect/sessAttempts*100) : 0;
+      document.getElementById('sessAcc').textContent = acc+'%';
+    }
+
+    function updateOverall() {
+      var done = document.querySelectorAll('.sign-tab.done').length;
+      var total = LESSON_SIGNS.length;
+      var pct = total > 0 ? Math.round((done/total)*100) : 0;
+      document.getElementById('overallBar').style.width = pct+'%';
+      document.getElementById('overallPct').textContent = pct+'%';
+    }
+
+    function showFlash(ok) {
+      var el = document.getElementById('resultFlash');
+      el.className = 'result-flash show ' + (ok ? 'rf-ok' : 'rf-no');
+      document.getElementById('rfEmo').textContent = ok ? '✅' : '❌';
+      document.getElementById('rfTxt').textContent = ok ? 'Correct! Great job!' : 'Keep trying!';
+      setTimeout(function(){ el.className = 'result-flash'; }, 1600);
+    }
+
+    /* ── Camera ── */
+    async function startCam() {
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video:{ width:{ideal:640}, height:{ideal:480}, facingMode:'user' }, audio:false
+        });
+        var vid = document.getElementById('lessonVid');
+        vid.srcObject = camStream;
+        await vid.play();
+        camRunning = true;
+        document.getElementById('camDot').classList.add('live');
+        document.getElementById('camTxt').textContent = 'Live';
+        document.getElementById('camOnBtn').disabled  = true;
+        document.getElementById('camOffBtn').disabled = false;
+        document.getElementById('detectStrip').style.display = 'block';
+        if (autoMode) startLoop();
+      } catch(e) { showToast('Camera error: '+e.message,'error'); }
+    }
+
+    function stopCam() {
+      if (camStream) camStream.getTracks().forEach(function(t){ t.stop(); });
+      camStream = null; camRunning = false;
+      clearInterval(frameTimer);
+      document.getElementById('camDot').classList.remove('live');
+      document.getElementById('camTxt').textContent  = 'Idle';
+      document.getElementById('camOnBtn').disabled   = false;
+      document.getElementById('camOffBtn').disabled  = true;
+      document.getElementById('detectStrip').style.display = 'none';
+    }
+
+    function toggleAuto() {
+      autoMode = !autoMode;
+      document.getElementById('autoBtn').textContent = '🤖 Auto ' + (autoMode ? 'ON' : 'OFF');
+      if (autoMode && camRunning) startLoop();
+      else clearInterval(frameTimer);
+    }
+
+    function startLoop() {
+      clearInterval(frameTimer);
+      frameTimer = setInterval(runFrame, 280);
+    }
+
+    async function runFrame() {
+      if (!camRunning || procFrame) return;
+      procFrame = true;
+      var vid = document.getElementById('lessonVid');
+      var cvs = document.getElementById('lessonCanvas');
+      var ctx = cvs.getContext('2d');
+      cvs.width  = vid.videoWidth  || 640;
+      cvs.height = vid.videoHeight || 480;
+      ctx.drawImage(vid, 0, 0);
+      var img = cvs.toDataURL('image/jpeg', 0.65);
+      try {
+        var resp = await fetch('/api/predict', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ frame: img })
+        });
+        if (resp.ok) {
+          var d = await resp.json();
+          if (d.success) handleDetect(d.gesture, d.confidence);
+        }
+      } catch(_) {}
+      procFrame = false;
+    }
+
+    function handleDetect(gesture, conf) {
+      document.getElementById('detectWord').textContent = gesture !== 'None' ? gesture : '—';
+      var fb  = document.getElementById('detectFb');
+      var cur = LESSON_SIGNS[currentIdx];
+      if (gesture !== 'None' && gesture.toLowerCase() === cur.toLowerCase() && conf > 0.7) {
+        fb.textContent  = '✅ Correct! Hold steady…';
+        fb.className    = 'detect-fb ok';
+        if (!autoTimeout) {
+          autoTimeout = setTimeout(async function(){
+            await recordAttempt(true);
+            showFlash(true);
+            autoTimeout = null;
+          }, 1500);
+        }
+      } else {
+        fb.textContent = gesture !== 'None' ? 'Detected: '+gesture+' ('+Math.round(conf*100)+'%)' : 'Show your hand…';
+        fb.className   = 'detect-fb no';
+        if (autoTimeout) { clearTimeout(autoTimeout); autoTimeout = null; }
+      }
+    }
+
+    /* ── Init ── */
+    window.addEventListener('DOMContentLoaded', function(){
+      if (LESSON_SIGNS.length > 0) selectSign(LESSON_SIGNS[0], 1);
+      updateOverall();
+    });
+  </script>
+</body>
+</html>

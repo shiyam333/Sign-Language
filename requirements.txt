@@ -1,0 +1,9 @@
+flask
+flask-cors
+opencv-python
+numpy
+mediapipe
+tensorflow
+deep-translator
+gtts
+mysql-connector-python

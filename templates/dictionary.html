@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Dictionary — SignBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .dict-top{
+      display:flex;align-items:flex-end;justify-content:space-between;
+      gap:16px;flex-wrap:wrap;margin-bottom:26px;
+    }
+    .search-wrap{position:relative}
+    .search-ico{
+      position:absolute;left:12px;top:50%;transform:translateY(-50%);
+      font-size:0.88rem;color:var(--text-3);pointer-events:none;
+    }
+    .search-wrap .form-input{padding-left:36px;width:240px}
+
+    .cat-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:28px}
+    .cat-btn{
+      padding:6px 16px;
+      border-radius:var(--r-full);
+      font-size:0.8rem;font-weight:600;
+      cursor:pointer;border:1px solid var(--border);
+      background:var(--bg-card);color:var(--text-2);
+      transition:all var(--dur) var(--ease);
+    }
+    .cat-btn:hover{border-color:var(--border-hover);color:var(--text-1)}
+    .cat-btn.active{
+      background:var(--teal-subtle);
+      border-color:var(--teal);color:var(--teal);
+    }
+
+    .dict-stats{
+      display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+      padding:13px 18px;
+      background:var(--bg-surface);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);margin-bottom:22px;
+    }
+    .dstat{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-2)}
+    .dstat strong{color:var(--text-1)}
+
+    .cat-section{margin-bottom:42px}
+    .cat-head{
+      font-size:0.72rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.1em;color:var(--teal);
+      margin-bottom:14px;padding-bottom:8px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:10px;
+    }
+    .cat-head span{color:var(--text-3);font-weight:400}
+
+    .signs-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(192px,1fr));
+      gap:14px;
+    }
+    .sign-card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      padding:18px;cursor:pointer;
+      transition:all var(--dur-slow) var(--ease);
+      text-align:center;
+    }
+    .sign-card:hover{
+      border-color:var(--border-hover);
+      transform:translateY(-3px);
+      box-shadow:var(--sh-teal);
+    }
+    .sign-emoji{
+      font-size:2.8rem;display:block;
+      margin-bottom:10px;
+      transition:transform 0.28s var(--ease);
+    }
+    .sign-card:hover .sign-emoji{transform:scale(1.18) rotate(-6deg)}
+    .sign-name{
+      font-family:var(--ff-display);font-size:1.05rem;
+      font-weight:700;margin-bottom:7px;color:var(--text-1);
+    }
+    .sign-desc{font-size:0.76rem;color:var(--text-3);line-height:1.55}
+    .sign-foot{margin-top:10px}
+
+    /* Modal */
+    .det-emoji{font-size:4.5rem;display:block;text-align:center;margin-bottom:14px}
+    .det-name{
+      font-family:var(--ff-display);font-size:1.9rem;
+      font-weight:700;text-align:center;margin-bottom:20px;
+    }
+    .det-row{
+      display:flex;gap:12px;padding:13px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .det-row:last-of-type{border-bottom:none}
+    .det-ico{font-size:1rem;flex-shrink:0;margin-top:2px}
+    .det-txt strong{
+      font-size:0.72rem;text-transform:uppercase;
+      letter-spacing:0.06em;color:var(--text-3);
+      display:block;margin-bottom:4px;
+    }
+    .det-txt p{font-size:0.86rem;color:var(--text-2);margin:0}
+    .det-actions{display:flex;gap:10px;margin-top:22px}
+    .det-actions .btn{flex:1}
+
+    .no-results{
+      text-align:center;padding:56px 0;color:var(--text-3);
+      display:none;
+    }
+    .no-results span{font-size:3rem;display:block;margin-bottom:14px}
+  </style>
+</head>
+<body>
+  <div class="amb amb-1"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-box">🤟</div>
+        Sign<em>Wavely</em>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/translator">Translator</a></li>
+        <li><a href="/dictionary" class="active">Dictionary</a></li>
+        <li><a href="/learn">Learn</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+      <div class="nav-end">
+        {% if user %}
+          <div class="nav-user-pill">
+            
+            <span class="nav-uname">{{ user.username }}</span>
+          </div>
+          <a href="/logout" class="btn btn-ghost btn-sm">Sign Out</a>
+        {% else %}
+          <a href="/login" class="btn btn-ghost btn-sm">Sign In</a>
+          <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+      <div class="dict-top fade-up">
+        <div>
+          <div class="label">Reference</div>
+          <h1>Sign Dictionary</h1>
+          <p style="margin-top:5px;font-size:0.88rem">Browse common signs with technique tips and difficulty ratings.</p>
+        </div>
+        <div class="search-wrap">
+          <span class="search-ico">🔍</span>
+          <input type="text" class="form-input" id="searchInput"
+                 placeholder="Search signs…" oninput="filterSigns(this.value)">
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="dict-stats fade-up-1">
+        <div class="dstat">📖 Total: <strong id="totalCnt">0</strong></div>
+        <div class="dstat">🟢 Beginner: <strong id="begCnt">0</strong></div>
+        <div class="dstat">🟡 Intermediate: <strong id="intCnt">0</strong></div>
+        <div class="dstat">📂 Categories: <strong>{{ sign_dictionary | length }}</strong></div>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="cat-tabs fade-up-1">
+        <button class="cat-btn active" onclick="filterCat('all',this)">All Signs</button>
+        {% for cat in sign_dictionary %}
+          <button class="cat-btn" onclick="filterCat('{{ cat }}',this)">{{ cat }}</button>
+        {% endfor %}
+      </div>
+
+      <!-- Signs -->
+      {% for cat, signs in sign_dictionary.items() %}
+      <div class="cat-section" data-cat="{{ cat }}">
+        <div class="cat-head">
+          {{ cat }}
+          <span>{{ signs | length }} signs</span>
+        </div>
+        <div class="signs-grid">
+          {% for s in signs %}
+          <div class="sign-card"
+               data-word="{{ s.word | lower }}"
+               data-cat="{{ cat }}"
+               data-diff="{{ s.difficulty }}"
+               onclick="openDetail('{{ s.word }}','{{ s.emoji }}','{{ s.description }}','{{ s.difficulty }}','{{ s.tip }}')">
+            <span class="sign-emoji">{{ s.emoji }}</span>
+            <div class="sign-name">{{ s.word }}</div>
+            <div class="sign-desc">{{ s.description }}</div>
+            <div class="sign-foot">
+              <span class="chip chip-{{ s.difficulty }}">{{ s.difficulty }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="no-results" id="noResults">
+        <span>🔍</span>
+        <h3>No signs found</h3>
+        <p>Try a different search term</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-wrap" id="detailWrap" onclick="closeOnBg(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+      <span class="det-emoji" id="detEmoji"></span>
+      <div class="det-name" id="detName"></div>
+      <div class="det-row">
+        <span class="det-ico">👁️</span>
+        <div class="det-txt">
+          <strong>Description</strong>
+          <p id="detDesc"></p>
+        </div>
+      </div>
+      <div class="det-row">
+        <span class="det-ico">💡</span>
+        <div class="det-txt">
+          <strong>Technique Tip</strong>
+          <p id="detTip"></p>
+        </div>
+      </div>
+      <div class="det-row">
+        <span class="det-ico">📊</span>
+        <div class="det-txt">
+          <strong>Difficulty</strong>
+          <p id="detDiff"></p>
+        </div>
+      </div>
+      <div class="det-actions">
+        <button class="btn btn-outline" onclick="speakSign()">🔊 Hear It</button>
+        <a href="/translator" class="btn btn-primary">📹 Try Live</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 <em>SignBridge</em> &mdash; Empowering Accessibility with AI</p>
+  </footer>
+
+  <div id="toastWrap"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    var currentWord = '';
+
+    // Count stats on load
+    window.addEventListener('DOMContentLoaded', function(){
+      var cards = document.querySelectorAll('.sign-card');
+      var beg=0, inter=0;
+      cards.forEach(function(c){
+        if(c.dataset.diff==='beginner') beg++;
+        else inter++;
+      });
+      document.getElementById('totalCnt').textContent  = cards.length;
+      document.getElementById('begCnt').textContent    = beg;
+      document.getElementById('intCnt').textContent    = inter;
+    });
+
+    function filterCat(cat, btn){
+      document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.cat-section').forEach(function(s){
+        s.style.display = (cat==='all' || s.dataset.cat===cat) ? 'block' : 'none';
+      });
+    }
+
+    function filterSigns(q){
+      q = q.toLowerCase().trim();
+      var cards = document.querySelectorAll('.sign-card');
+      var vis = 0;
+      cards.forEach(function(c){
+        var show = !q || c.dataset.word.includes(q);
+        c.style.display = show ? 'block' : 'none';
+        if(show) vis++;
+      });
+      document.querySelectorAll('.cat-section').forEach(function(s){
+        var any = Array.from(s.querySelectorAll('.sign-card')).some(function(c){ return c.style.display!=='none'; });
+        s.style.display = any ? 'block' : 'none';
+      });
+      document.getElementById('noResults').style.display = vis===0 ? 'block' : 'none';
+    }
+
+    function openDetail(word, emoji, desc, diff, tip){
+      currentWord = word;
+      document.getElementById('detEmoji').textContent = emoji;
+      document.getElementById('detName').textContent  = word;
+      document.getElementById('detDesc').textContent  = desc;
+      document.getElementById('detTip').textContent   = tip;
+      document.getElementById('detDiff').innerHTML    = '<span class="chip chip-'+diff+'">'+diff+'</span>';
+      document.getElementById('detailWrap').classList.add('open');
+    }
+
+    function closeDetail(){
+      document.getElementById('detailWrap').classList.remove('open');
+    }
+
+    function closeOnBg(e){
+      if(e.target === document.getElementById('detailWrap')) closeDetail();
+    }
+
+    function speakSign(){
+      if(!currentWord) return;
+      fetch('/api/speak',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({text:currentWord, lang:'en'})
+      });
+      showToast('Speaking: '+currentWord,'success');
+    }
+  </script>
+</body>
+</html>
