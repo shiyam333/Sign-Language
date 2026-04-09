@@ -6,7 +6,7 @@ import os
 # Path to new two-hand CSV
 CSV_PATH = "../data/twohand_signs.csv"
 
-LABEL = "DRINK"      # change this for each word
+LABEL = "HI"      # change this for each word
 NUM_SAMPLES = 200      # frames to record
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
